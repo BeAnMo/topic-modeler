@@ -149,20 +149,20 @@ function memo(proc) {
 class Model {
   constructor() {
     this.bow = new BowVectorTrie();
-    this.docLookup = new TermToDocLookup();
+    this.allTerms = new xSet();
 
     this.allTermsVect = [];
   }
 
   add(doc, word, freq) {
     this.bow.add(doc, word, freq);
-    this.docLookup.add(word, doc);
+    this.allTerms.add(word);
     return this;
   }
 
   generateTopics(numTopics) {
-    this.allTermsVect = [...this.docLookup]
-      .map(([term]) => makeVectEl(term, 0))
+    this.allTermsVect = [...this.allTerms]
+      .map(term => makeVectEl(term, 0))
       .sort((a, b) => a[SORT_KEY].localeCompare(b[SORT_KEY]));
     /**
      * @type {[string, BagOfWordsVector][]}
