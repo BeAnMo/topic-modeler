@@ -1,18 +1,27 @@
 const { findIndex, findPossibleIndex } = require('arrset/dist/flexible');
 
-const SORT_KEY = 'w'; // word
-const FREQ_KEY = 'f'; // frequency
+export const SORT_KEY = 'w'; // word
+export const FREQ_KEY = 'f'; // frequency
 
-function defaultCompare(a, b) {
+export type BowVectorVal = string;
+export type BowVectorFreq = number;
+export type BowVectorElem = {
+  [SORT_KEY]: BowVectorVal;
+  [FREQ_KEY]: BowVectorFreq;
+};
+
+export function defaultCompare(a: BowVectorElem, b: BowVectorElem): number {
   return a[SORT_KEY].localeCompare(b[SORT_KEY]);
 }
 
-function defaultFind(word) {
+export function defaultFind(word: BowVectorVal): (b: BowVectorElem) => number {
   return (b) => word.localeCompare(b[SORT_KEY]);
 }
 
-class BagOfWordsVector {
-  constructor(items, ignorePrep) {
+export class BowVector {
+  _v: BowVectorElem[];
+
+  constructor(items?: BowVectorElem[], ignorePrep?: boolean) {
     if (!Array.isArray(items)) {
       this._v = [];
     } else if (ignorePrep) {
@@ -35,11 +44,8 @@ class BagOfWordsVector {
    * BagOfWordsVector. Returns the existing
    * index if WORD exists or -1 denoting a
    * a new word.
-   * @param {string} word
-   * @param {number} freq
-   * @returns
    */
-  push(word, freq) {
+  push(word: BowVectorVal, freq: number): number {
     const find = defaultFind(word);
     const existingIdx = findIndex(find, this._v);
 
@@ -55,7 +61,7 @@ class BagOfWordsVector {
     return existingIdx;
   }
 
-  delete(word) {
+  delete(word: BowVectorVal): BowVector {
     const find = defaultFind(word);
     const idx = findIndex(find, this._v);
 
@@ -66,7 +72,7 @@ class BagOfWordsVector {
     return this;
   }
 
-  get(word) {
+  get(word: BowVectorVal): number | undefined {
     const find = defaultFind(word);
     const idx = findIndex(find, this._v);
 
@@ -94,13 +100,13 @@ class BagOfWordsVector {
   }
 
   _join(combine, sm, lg) {
-    let results = [];
+    let results: BowVectorElem[] = [];
     let i = 0;
     let j = 0;
 
     while (sm[i] && lg[j]) {
-      const a = sm[i];
-      const b = lg[j];
+      const a: BowVectorElem = sm[i];
+      const b: BowVectorElem = lg[j];
 
       if (a[SORT_KEY] < b[SORT_KEY]) {
         results.push(a);
@@ -133,22 +139,22 @@ class BagOfWordsVector {
     return results;
   }
 
-  add(that) {
+  add(that: BowVector) {
     const [sm, lg] = this._swap(that, that._v, this._v);
     if (sm === null) {
       return lg;
     }
-    const res = this._join((a, b) => a + b, that._v, sm, lg);
-    return new BagOfWordsVector(res, true);
+    const res = this._join((a, b) => a + b, sm, lg);
+    return new BowVector(res, true);
   }
 
-  subtract(that) {
+  subtract(that: BowVector) {
     const [sm, lg] = this._swap(that, that._v, this._v);
     if (sm === null) {
       return lg;
     }
     const res = this._join((a, b) => a - b, sm, lg);
-    return new BagOfWordsVector(res, true);
+    return new BowVector(res, true);
   }
 
   _similarity(sm, lg) {
@@ -195,6 +201,11 @@ class BagOfWordsVector {
     return dotProd / (Math.sqrt(v1mag) * Math.sqrt(v2mag));
   }
 
+  /**
+   *
+   * @param {BowVector} that
+   * @returns {number}
+   */
   similarity(that) {
     const [sm, lg] = this._swap(that, 0, 0);
     if (sm === null) {
@@ -204,11 +215,3 @@ class BagOfWordsVector {
     return this._similarity(sm, lg);
   }
 }
-
-module.exports = {
-  BagOfWordsVector,
-  SORT_KEY,
-  FREQ_KEY,
-  defaultCompare,
-  defaultFind,
-};
