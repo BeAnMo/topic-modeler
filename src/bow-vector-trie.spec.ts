@@ -1,4 +1,4 @@
-import BowVectorTrie from './bow-vector-trie';
+import BowVectorTrie from './bow-vector-trie.js';
 
 describe('BowVectorTrie', () => {
     const trie = new BowVectorTrie();

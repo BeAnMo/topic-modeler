@@ -1,4 +1,4 @@
-const { BasicTrie } = require('a-trie-grows-in-js/dist/index.umd.js');
+import { BasicTrie } from 'a-trie-grows-in-js';
 import { SORT_KEY, FREQ_KEY, BowVector } from './x-types/vector'
 
 
