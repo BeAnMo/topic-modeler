@@ -1,4 +1,4 @@
-import { BowVector } from './vector';
+const { BowVector } = require('./vector.js');
 
 describe('BowVector', () => {
   describe('creating a vector', () => {
@@ -109,7 +109,7 @@ describe('BowVector', () => {
         { w: 'hi', f: 3 },
         { w: 'ho', f: 3 },
       ],
-      true
+      1
     );
     const v2 = new BowVector(
       [
@@ -117,7 +117,7 @@ describe('BowVector', () => {
         { w: 'he', f: 3 },
         { w: 'hu', f: 3 },
       ],
-      true
+      1
     );
 
     describe('when adding 2 vectors', () => {
