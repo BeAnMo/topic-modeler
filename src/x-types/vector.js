@@ -1,24 +1,30 @@
-const { findIndex, findPossibleIndex } = require('arrset/dist/flexible');
-
-const SORT_KEY = 'w'; // word
-const FREQ_KEY = 'f'; // frequency
-
-function defaultCompare(a, b) {
-  return a[SORT_KEY].localeCompare(b[SORT_KEY]);
-}
-
-function defaultFind(word) {
-  return (b) => word.localeCompare(b[SORT_KEY]);
-}
+const { findIndex, findPossibleIndex } = require('arrset/dist/flexible.js');
 
 class BowVector {
+  static SORT_KEY = 'w'; // word
+  static FREQ_KEY = 'f'; // freq
+  static defaultCompare = function defaultCompare(a, b) {
+    return a[BowVector.SORT_KEY].localeCompare(b[BowVector.SORT_KEY]);
+  };
+  static defaultFind = function defaultFind(word) {
+    return function boundDefaultFind(b) {
+      return word.localeCompare(b[BowVector.SORT_KEY])
+    }
+  };
+  static makeVectElem = function makeVectElem(w, f) {
+    return {
+      [BowVector.SORT_KEY]: w,
+      [BowVector.FREQ_KEY]: f,
+    };
+  };
+
   constructor(items, ignorePrep) {
     if (!Array.isArray(items)) {
       this._v = [];
     } else if (ignorePrep) {
       this._v = items;
     } else {
-      this._v = items.sort(defaultCompare);
+      this._v = items.sort(BowVector.defaultCompare);
     }
   }
 
@@ -40,25 +46,21 @@ class BowVector {
    * @returns
    */
   push(word, freq) {
-    const find = defaultFind(word);
+    const find = BowVector.defaultFind(word);
     const existingIdx = findIndex(find, this._v);
-
+    console.log(word, freq)
     if (existingIdx > -1) {
-      this._v[existingIdx][FREQ_KEY] += freq;
+      this._v[existingIdx][BowVector.FREQ_KEY] += freq;
     } else {
       const newIdx = findPossibleIndex(find, this._v);
-      this._v.splice(newIdx, 0, {
-        [SORT_KEY]: word,
-        [FREQ_KEY]: freq,
-      });
+      this._v.splice(newIdx, 0, BowVector.makeVectElem(word, freq));
     }
     return existingIdx;
   }
 
   delete(word) {
-    const find = defaultFind(word);
+    const find = BowVector.defaultFind(word);
     const idx = findIndex(find, this._v);
-
     if (idx > -1) {
       this._v.splice(idx, 1);
     }
@@ -67,7 +69,8 @@ class BowVector {
   }
 
   get(word) {
-    const find = defaultFind(word);
+    const FREQ_KEY = BowVector.FREQ_KEY;
+    const find = BowVector.defaultFind(word);
     const idx = findIndex(find, this._v);
 
     if (idx === -1) {
@@ -94,6 +97,9 @@ class BowVector {
   }
 
   _join(combine, sm, lg) {
+    const SORT_KEY = BowVector.SORT_KEY;
+    const FREQ_KEY = BowVector.FREQ_KEY;
+
     let results = [];
     let i = 0;
     let j = 0;
@@ -138,7 +144,7 @@ class BowVector {
     if (sm === null) {
       return lg;
     }
-    const res = this._join((a, b) => a + b, that._v, sm, lg);
+    const res = this._join((a, b) => a + b, sm, lg);
     return new BowVector(res, true);
   }
 
@@ -163,18 +169,18 @@ class BowVector {
       const a = sm[i];
       const b = lg[j];
 
-      if (a[SORT_KEY] < b[SORT_KEY]) {
+      if (a[BowVector.SORT_KEY] < b[BowVector.SORT_KEY]) {
         // Equivalent of b.freq == 0
-        v1mag += a[FREQ_KEY] ** 2;
+        v1mag += a[BowVector.FREQ_KEY] ** 2;
         i++;
-      } else if (a[SORT_KEY] > b[SORT_KEY]) {
+      } else if (a[BowVector.SORT_KEY] > b[BowVector.SORT_KEY]) {
         // Equivalent of a.freq == 0
-        v2mag += b[FREQ_KEY] ** 2;
+        v2mag += b[BowVector.FREQ_KEY] ** 2;
         j++;
       } else {
-        v1mag += a[FREQ_KEY] ** 2;
-        v2mag += b[FREQ_KEY] ** 2;
-        dotProd += a[FREQ_KEY] * b[FREQ_KEY];
+        v1mag += a[BowVector.FREQ_KEY] ** 2;
+        v2mag += b[BowVector.FREQ_KEY] ** 2;
+        dotProd += a[BowVector.FREQ_KEY] * b[BowVector.FREQ_KEY];
         i++;
         j++;
       }
@@ -182,13 +188,13 @@ class BowVector {
 
     if (sm[i]) {
       for (; i < sm.length; i++) {
-        v1mag += sm[i][FREQ_KEY] ** 2;
+        v1mag += sm[i][BowVector.FREQ_KEY] ** 2;
       }
     }
 
     if (lg[j]) {
       for (; j < lg.length; j++) {
-        v2mag += lg[j][FREQ_KEY] ** 2;
+        v2mag += lg[j][BowVector.FREQ_KEY] ** 2;
       }
     }
 
@@ -205,10 +211,4 @@ class BowVector {
   }
 }
 
-module.exports = {
-  BowVector,
-  SORT_KEY,
-  FREQ_KEY,
-  defaultCompare,
-  defaultFind,
-};
+module.exports = { BowVector };

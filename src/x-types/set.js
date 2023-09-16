@@ -5,7 +5,7 @@ const {
   similarity,
   findPossibleIndex,
   findIndex,
-} = require('arrset/dist/optimized');
+} = require('arrset/dist/optimized.js');
 
 // @ts-check
 class xSet {

@@ -9,8 +9,8 @@ describe('BowVector', () => {
           { w: 'he', f: 2 },
           { w: 'ho', f: 3 },
         ];
-        const v = new BowVector(arr, true);
-        expect(v._v[0]).toEqual(arr[0]);
+        const v = new BowVector(arr, true).toArray();
+        expect(v.at(0)).toEqual(arr[0]);
       });
     });
 
@@ -22,13 +22,38 @@ describe('BowVector', () => {
           { w: 'he', f: 2 },
           { w: 'ho', f: 3 },
         ];
-        const v = new BowVector(arr, false);
-        expect(v._v[0].w).toEqual(leastWord);
+        const v = new BowVector(arr, false).toArray();
+        expect(v.at(0).w).toEqual(leastWord);
       });
     });
   });
 
   describe('adding an element', () => {
+    describe('when starting with an empty vector', () => {
+      it('should insert at the first position', () => {
+        const word = 'ha';
+        const v = new BowVector();
+        v.push(word, 1);
+        expect(v.toArray().at(0).w).toEqual(word);
+      });
+    });
+
+    describe('when starting with a one element vector', () => {
+      it('should insert at the first position', () => {
+        const word = 'ha';
+        const v = new BowVector([BowVector.makeVectElem('he', 1)]);
+        v.push(word, 1);
+        expect(v.toArray().at(0).w).toEqual(word);
+      });
+
+      it('should insert at the last position', () => {
+        const word = 'hy';
+        const v = new BowVector([BowVector.makeVectElem('he', 1)]);
+        v.push(word, 1);
+        expect(v.toArray().at(1).w).toEqual(word);
+      });
+    });
+
     describe('when the new element word is "less than" the others', () => {
       it('should push to the start of the array', () => {
         const arr = [
@@ -39,7 +64,7 @@ describe('BowVector', () => {
         const word = 'ha';
         const v = new BowVector(arr, true);
         v.push(word, 10);
-        expect(v._v[0].w).toEqual(word);
+        expect(v.toArray().at(0).w).toEqual(word);
       });
     });
 
@@ -53,7 +78,7 @@ describe('BowVector', () => {
         const word = 'hu';
         const v = new BowVector(arr, true);
         v.push(word, 10);
-        expect(v._v[v._v.length - 1].w).toEqual(word);
+        expect(v.toArray().at(-1).w).toEqual(word);
       });
     });
 
@@ -67,7 +92,7 @@ describe('BowVector', () => {
         const word = 'hit';
         const v = new BowVector(arr, true);
         v.push(word, 10);
-        expect(v._v[2].w).toEqual(word);
+        expect(v.toArray().at(2).w).toEqual(word);
       });
     });
 
@@ -81,8 +106,8 @@ describe('BowVector', () => {
         const word = 'hi';
         const v = new BowVector(arr, true);
         v.push(word, 10);
-        expect(v._v[1].w).toEqual(word);
-        expect(v._v[1].f).toEqual(10 + 3);
+        expect(v.toArray().at(1).w).toEqual(word);
+        expect(v.toArray().at(1).f).toEqual(10 + 3);
       });
     });
   });
@@ -97,7 +122,7 @@ describe('BowVector', () => {
       const word = 'hi';
       const v = new BowVector([...arr], true);
       v.delete(word);
-      expect(v._v.length).toEqual(arr.length - 1);
+      expect(v.toArray().length).toEqual(arr.length - 1);
       expect(v.get(word)).toBeFalsy();
     });
   });

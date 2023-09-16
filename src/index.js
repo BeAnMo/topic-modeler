@@ -43,7 +43,6 @@ function fullBowVector(cmp, allTermsVect, docVect) {
   return results;
 }
 
-
 function memo(proc) {
   let cache = new Map();
   return function _memo(...args) {
