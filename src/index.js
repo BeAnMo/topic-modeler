@@ -1,47 +1,17 @@
 // @ts-check
-const { BasicTrie } = require('a-trie-grows-in-js');
-const { BagOfWordsVector, SORT_KEY, FREQ_KEY, defaultCompare } = require('./x-types/vector.js');
+const {
+  BowVector,
+  SORT_KEY,
+  FREQ_KEY,
+  defaultCompare,
+} = require('./x-types/vector.js');
 const { xSet } = require('./x-types/set.js');
 
 function makeVectEl(sortVal, freqVal) {
   return {
     [SORT_KEY]: sortVal,
-    [FREQ_KEY]: freqVal
+    [FREQ_KEY]: freqVal,
   };
-}
-
-class TermToDocLookup extends BasicTrie {
-  constructor() {
-    super();
-  }
-
-  /**
-   * 
-   * @param {string} term 
-   * @param {string} doc 
-   * @returns {TermToDocLookup}
-   */
-  add(term, doc) {
-    /**
-     * @type {{ [key: string]: xSet }}
-     */
-    const cursor = this._cursor(term, 1, 0);
-
-    if (!cursor[this.EOI]) {
-      cursor[this.EOI] = new xSet([doc]);
-      this.size++;
-    } else {
-      cursor[this.EOI].add(doc);
-    }
-
-    return this;
-  }
-
-  *[Symbol.iterator]() {
-    for (const [word, docIds] of this._traverse()) {
-      yield [word, docIds];
-    }
-  }
 }
 
 function fullBowVector(cmp, allTermsVect, docVect) {
@@ -73,66 +43,6 @@ function fullBowVector(cmp, allTermsVect, docVect) {
   return results;
 }
 
-class BowVectorTrie extends BasicTrie {
-  constructor() {
-    super();
-    // Count of unique full keys.
-    this.branches = 0;
-    // Count of all vector elements.
-    this.leaves = 0;
-  }
-
-  /**
-   *
-   * @param {string} key
-   * @param {string} val
-   * @param {number} freq
-   * @returns {BowVectorTrie}
-   */
-  add(key, val, freq = 0) {
-    const cursor = this._cursor(key, 1, 0);
-
-    if (!cursor[this.EOI]) {
-      cursor[this.EOI] = new BagOfWordsVector(
-        [{ [SORT_KEY]: val, [FREQ_KEY]: freq }],
-        1
-      );
-      this.branches++;
-      this.leaves++;
-    } else {
-      const newEntry = cursor[this.EOI].push(val, freq) === -1;
-
-      if (newEntry) {
-        this.leaves++;
-      }
-    }
-    return this;
-  }
-
-  /**
-   *
-   * @param {string} word
-   * @returns {BowVectorTrie}
-   */
-  delete(word) {
-    let [cursor, parent] = this._cursor(word, 0, 1);
-
-    if (cursor !== this.NONE) {
-      const vectorLen = cursor[this.EOI].length;
-      delete parent[word.slice(-1)[0]];
-      this.branches--;
-      this.leaves -= vectorLen;
-    }
-
-    return this;
-  }
-
-  *[Symbol.iterator]() {
-    for (const [doc, vector] of this._traverse()) {
-      yield [doc, vector];
-    }
-  }
-}
 
 function memo(proc) {
   let cache = new Map();
@@ -143,7 +53,7 @@ function memo(proc) {
     const result = proc.apply(this, args);
     cache.set(args, result);
     return cache;
-  }
+  };
 }
 
 class Model {
@@ -161,31 +71,49 @@ class Model {
   }
 
   generateTopics(numTopics) {
-    this.allTermsVect = [...this.allTerms]
-      .map(term => makeVectEl(term, 0))
-      .sort((a, b) => a[SORT_KEY].localeCompare(b[SORT_KEY]));
+    this.allTermsVect = [...this.allTerms].map((term) => makeVectEl(term, 0));
     /**
-     * @type {[string, BagOfWordsVector][]}
+     * @typedef {[string, BowVector]} BowPair
+     *
+     * @type {BowPair[]}
      */
-    const allDocs = [...this.bow];
+    const allDocs = [...this.bow.all()];
     const len = allDocs.length;
 
     const makeVect = memo(fullBowVector);
 
-    const docVect = ([doc, vec]) => vec;
+    /**
+     *
+     * @param {BowPair} param0
+     * @returns {BowVector}
+     */
+    const docVect = ([_, vec]) => vec;
+    /**
+     *
+     * @param {BowPair} param0
+     * @returns {string}
+     */
     const docName = ([d]) => d;
 
     let results = [];
 
     for (let i = 0; i < len; i++) {
-      const vectA = makeVect(fullBowVector, this.allTermsVect, docVect(allDocs[i]));
+      const vectA = makeVect(
+        defaultCompare,
+        this.allTermsVect,
+        docVect(allDocs[i])
+      );
       for (let j = i + 1; j < len; j++) {
-        const vectB = makeVect(fullBowVector, this.allTermsVect, docVect(allDocs[j]));
+        const vectB = makeVect(
+          defaultCompare,
+          this.allTermsVect,
+          docVect(allDocs[j])
+        );
 
         results.push([
           docName(allDocs[i]),
           docName(allDocs[j]),
-          vectA.similarity(vectB)
+          vectA.similarity(vectB),
         ]);
       }
     }

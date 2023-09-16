@@ -11,7 +11,7 @@ function defaultFind(word) {
   return (b) => word.localeCompare(b[SORT_KEY]);
 }
 
-class BagOfWordsVector {
+class BowVector {
   constructor(items, ignorePrep) {
     if (!Array.isArray(items)) {
       this._v = [];
@@ -32,7 +32,7 @@ class BagOfWordsVector {
 
   /**
    * @description Adds a WORD to the current
-   * BagOfWordsVector. Returns the existing
+   * BowVector. Returns the existing
    * index if WORD exists or -1 denoting a
    * a new word.
    * @param {string} word
@@ -139,7 +139,7 @@ class BagOfWordsVector {
       return lg;
     }
     const res = this._join((a, b) => a + b, that._v, sm, lg);
-    return new BagOfWordsVector(res, true);
+    return new BowVector(res, true);
   }
 
   subtract(that) {
@@ -148,7 +148,7 @@ class BagOfWordsVector {
       return lg;
     }
     const res = this._join((a, b) => a - b, sm, lg);
-    return new BagOfWordsVector(res, true);
+    return new BowVector(res, true);
   }
 
   _similarity(sm, lg) {
@@ -206,7 +206,7 @@ class BagOfWordsVector {
 }
 
 module.exports = {
-  BagOfWordsVector,
+  BowVector,
   SORT_KEY,
   FREQ_KEY,
   defaultCompare,

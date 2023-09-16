@@ -1,6 +1,6 @@
-const { BagOfWordsVector } = require('./vector.js');
+const { BowVector } = require('./vector.js');
 
-describe('BagOfWordsVector', () => {
+describe('BowVector', () => {
   describe('creating a vector', () => {
     describe('when ignoring the input sort', () => {
       it('should add array as is', () => {
@@ -9,7 +9,7 @@ describe('BagOfWordsVector', () => {
           { w: 'he', f: 2 },
           { w: 'ho', f: 3 },
         ];
-        const v = new BagOfWordsVector(arr, true);
+        const v = new BowVector(arr, true);
         expect(v._v[0]).toEqual(arr[0]);
       });
     });
@@ -22,7 +22,7 @@ describe('BagOfWordsVector', () => {
           { w: 'he', f: 2 },
           { w: 'ho', f: 3 },
         ];
-        const v = new BagOfWordsVector(arr, false);
+        const v = new BowVector(arr, false);
         expect(v._v[0].w).toEqual(leastWord);
       });
     });
@@ -37,7 +37,7 @@ describe('BagOfWordsVector', () => {
           { w: 'ho', f: 3 },
         ];
         const word = 'ha';
-        const v = new BagOfWordsVector(arr, true);
+        const v = new BowVector(arr, true);
         v.push(word, 10);
         expect(v._v[0].w).toEqual(word);
       });
@@ -51,7 +51,7 @@ describe('BagOfWordsVector', () => {
           { w: 'ho', f: 3 },
         ];
         const word = 'hu';
-        const v = new BagOfWordsVector(arr, true);
+        const v = new BowVector(arr, true);
         v.push(word, 10);
         expect(v._v[v._v.length - 1].w).toEqual(word);
       });
@@ -65,7 +65,7 @@ describe('BagOfWordsVector', () => {
           { w: 'ho', f: 3 },
         ];
         const word = 'hit';
-        const v = new BagOfWordsVector(arr, true);
+        const v = new BowVector(arr, true);
         v.push(word, 10);
         expect(v._v[2].w).toEqual(word);
       });
@@ -79,7 +79,7 @@ describe('BagOfWordsVector', () => {
           { w: 'ho', f: 3 },
         ];
         const word = 'hi';
-        const v = new BagOfWordsVector(arr, true);
+        const v = new BowVector(arr, true);
         v.push(word, 10);
         expect(v._v[1].w).toEqual(word);
         expect(v._v[1].f).toEqual(10 + 3);
@@ -95,7 +95,7 @@ describe('BagOfWordsVector', () => {
         { w: 'ho', f: 3 },
       ];
       const word = 'hi';
-      const v = new BagOfWordsVector([...arr], true);
+      const v = new BowVector([...arr], true);
       v.delete(word);
       expect(v._v.length).toEqual(arr.length - 1);
       expect(v.get(word)).toBeFalsy();
@@ -103,7 +103,7 @@ describe('BagOfWordsVector', () => {
   });
 
   describe('math operations', () => {
-    const v1 = new BagOfWordsVector(
+    const v1 = new BowVector(
       [
         { w: 'he', f: 2 },
         { w: 'hi', f: 3 },
@@ -111,7 +111,7 @@ describe('BagOfWordsVector', () => {
       ],
       1
     );
-    const v2 = new BagOfWordsVector(
+    const v2 = new BowVector(
       [
         { w: 'ha', f: 2 },
         { w: 'he', f: 3 },
