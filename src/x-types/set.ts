@@ -7,9 +7,11 @@ const {
   findIndex,
 } = require('arrset/dist/optimized');
 
-// @ts-check
-class xSet {
-  constructor(items, ignorePrep = false) {
+export class xSet<Item> {
+  items: Item[];
+  size: number;
+
+  constructor(items?: Item[], ignorePrep = false) {
     // Default sort is not "correct" but allows consistent
     // usage of < & >
     if (!Array.isArray(items)) {
@@ -40,7 +42,7 @@ class xSet {
     return this.items;
   }
 
-  add(item) {
+  add(item: Item): xSet<Item> {
     if (item === undefined) {
       return this;
     }
@@ -54,7 +56,7 @@ class xSet {
     return this;
   }
 
-  delete(item) {
+  delete(item: Item): xSet<Item> {
     if (item === undefined) {
       return this;
     }
@@ -68,18 +70,18 @@ class xSet {
     return this;
   }
 
-  has(item) {
+  has(item: Item): boolean {
     if (item === undefined) {
       return false;
     }
     return findIndex(this.items, item) >= 0;
   }
 
-  difference(other) {
+  difference(other: xSet<Item>): xSet<Item> {
     return new xSet(difference(this.items, other.items), true);
   }
 
-  union(other) {
+  union(other: xSet<Item>): xSet<Item> {
     const nextSet =
       this.size <= other.size
         ? union(this.items, other.items)
@@ -88,7 +90,7 @@ class xSet {
     return new xSet(nextSet, true);
   }
 
-  intersection(other) {
+  intersection(other: xSet<Item>): xSet<Item> {
     const nextSet =
       this.size <= other.size
         ? intersection(this.items, other.items)
@@ -97,13 +99,9 @@ class xSet {
     return new xSet(nextSet, true);
   }
 
-  similarity(other) {
+  similarity(other: xSet<Item>): xSet<Item> {
     return this.size <= other.size
       ? similarity(this.items, other.items)
       : similarity(other.items, this.items);
   }
 }
-
-module.exports = {
-  xSet,
-};

@@ -1,7 +1,11 @@
-const { BasicTrie } = require('a-trie-grows-in-js');
+import { BasicTrie } from 'a-trie-grows-in-js';
+import { SORT_KEY, FREQ_KEY, BowVector } from './x-types/vector'
 
 
-class BowVectorTrie extends BasicTrie {
+export default class BowVectorTrie extends BasicTrie {
+    branches: number;
+    leaves: number;
+
     constructor() {
         super();
         // Count of unique full keys.
@@ -10,20 +14,13 @@ class BowVectorTrie extends BasicTrie {
         this.leaves = 0;
     }
 
-    /**
-     *
-     * @param {string} key
-     * @param {string} val
-     * @param {number} freq
-     * @returns {BowVectorTrie}
-     */
-    add(key, val, freq = 0) {
+    add(key: string, val: string, freq = 0): BowVectorTrie {
         const cursor = this._cursor(key, 1, 0);
 
         if (!cursor[this.EOI]) {
             cursor[this.EOI] = new BowVector(
                 [{ [SORT_KEY]: val, [FREQ_KEY]: freq }],
-                1
+                true
             );
             this.branches++;
             this.leaves++;
@@ -37,12 +34,7 @@ class BowVectorTrie extends BasicTrie {
         return this;
     }
 
-    /**
-     *
-     * @param {string} word
-     * @returns {BowVectorTrie}
-     */
-    delete(word) {
+    delete(word: string): BowVectorTrie {
         let [cursor, parent] = this._cursor(word, 0, 1);
 
         if (cursor !== this.NONE) {
@@ -55,18 +47,9 @@ class BowVectorTrie extends BasicTrie {
         return this;
     }
 
-    *[Symbol.iterator]() {
+    *[Symbol.iterator](): Generator<[string, BowVector], any, unknown> {
         for (const [doc, vector] of this._traverse()) {
             yield [doc, vector];
         }
     }
-
-    /**
-     * @yields {[string, BowVector]}
-     */
-    *all() {
-        yield* this._traverse();
-    }
 }
-
-module.exports = BowVectorTrie
