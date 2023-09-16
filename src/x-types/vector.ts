@@ -52,7 +52,7 @@ export class BowVector {
     if (existingIdx > -1) {
       this._v[existingIdx][FREQ_KEY] += freq;
     } else {
-      const newIdx = findPossibleIndex(find, this._v);
+      const newIdx =  findPossibleIndex(find, this._v);
       this._v.splice(newIdx, 0, {
         [SORT_KEY]: word,
         [FREQ_KEY]: freq,

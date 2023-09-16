@@ -6,7 +6,8 @@
     "skipLibCheck": true,
     "outDir": "dist/",
     "target": "ES2015",
-    "rootDir": "src"
+    "rootDir": "src",
+    "esModuleInterop": true
   },
   "exclude": ["**/*.spec.js", "**/*.spec.ts"],
   "include": ["src/*"]
