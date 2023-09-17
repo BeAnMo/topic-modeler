@@ -8,8 +8,8 @@ class BowVector {
   };
   static defaultFind = function defaultFind(word) {
     return function boundDefaultFind(b) {
-      return word.localeCompare(b[BowVector.SORT_KEY])
-    }
+      return word.localeCompare(b[BowVector.SORT_KEY]);
+    };
   };
   static makeVectElem = function makeVectElem(w, f) {
     return {
@@ -48,7 +48,6 @@ class BowVector {
   push(word, freq) {
     const find = BowVector.defaultFind(word);
     const existingIdx = findIndex(find, this._v);
-    console.log(word, freq)
     if (existingIdx > -1) {
       this._v[existingIdx][BowVector.FREQ_KEY] += freq;
     } else {
