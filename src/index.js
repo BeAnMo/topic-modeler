@@ -1,18 +1,7 @@
 // @ts-check
-const {
-  BowVector,
-  SORT_KEY,
-  FREQ_KEY,
-  defaultCompare,
-} = require('./x-types/vector.js');
+const { BowVector } = require('./x-types/vector.js');
+const BowVectorTrie = require('./bow-vector-trie.js');
 const { xSet } = require('./x-types/set.js');
-
-function makeVectEl(sortVal, freqVal) {
-  return {
-    [SORT_KEY]: sortVal,
-    [FREQ_KEY]: freqVal,
-  };
-}
 
 function fullBowVector(cmp, allTermsVect, docVect) {
   let i = 0;
@@ -70,7 +59,9 @@ class Model {
   }
 
   generateTopics(numTopics) {
-    this.allTermsVect = [...this.allTerms].map((term) => makeVectEl(term, 0));
+    this.allTermsVect = [...this.allTerms].map((term) =>
+      BowVector.makeVectElem(term, 0)
+    );
     /**
      * @typedef {[string, BowVector]} BowPair
      *
@@ -98,13 +89,13 @@ class Model {
 
     for (let i = 0; i < len; i++) {
       const vectA = makeVect(
-        defaultCompare,
+        BowVector.defaultCompare,
         this.allTermsVect,
         docVect(allDocs[i])
       );
       for (let j = i + 1; j < len; j++) {
         const vectB = makeVect(
-          defaultCompare,
+          BowVector.defaultCompare,
           this.allTermsVect,
           docVect(allDocs[j])
         );
