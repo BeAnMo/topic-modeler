@@ -1,33 +1,30 @@
-const { findIndex, findPossibleIndex } = require('arrset/dist/flexible');
+const { findIndex, findPossibleIndex } = require('arrset/dist/flexible.js');
 
-export const SORT_KEY = 'w'; // word
-export const FREQ_KEY = 'f'; // frequency
+class BowVector {
+  static SORT_KEY = 'w'; // word
+  static FREQ_KEY = 'f'; // freq
+  static defaultCompare = function defaultCompare(a, b) {
+    return a[BowVector.SORT_KEY].localeCompare(b[BowVector.SORT_KEY]);
+  };
+  static defaultFind = function defaultFind(word) {
+    return function boundDefaultFind(b) {
+      return word.localeCompare(b[BowVector.SORT_KEY]);
+    };
+  };
+  static makeVectElem = function makeVectElem(w, f) {
+    return {
+      [BowVector.SORT_KEY]: w,
+      [BowVector.FREQ_KEY]: f,
+    };
+  };
 
-export type BowVectorVal = string;
-export type BowVectorFreq = number;
-export type BowVectorElem = {
-  [SORT_KEY]: BowVectorVal;
-  [FREQ_KEY]: BowVectorFreq;
-};
-
-export function defaultCompare(a: BowVectorElem, b: BowVectorElem): number {
-  return a[SORT_KEY].localeCompare(b[SORT_KEY]);
-}
-
-export function defaultFind(word: BowVectorVal): (b: BowVectorElem) => number {
-  return (b) => word.localeCompare(b[SORT_KEY]);
-}
-
-export class BowVector {
-  _v: BowVectorElem[];
-
-  constructor(items?: BowVectorElem[], ignorePrep?: boolean) {
+  constructor(items, ignorePrep) {
     if (!Array.isArray(items)) {
       this._v = [];
     } else if (ignorePrep) {
       this._v = items;
     } else {
-      this._v = items.sort(defaultCompare);
+      this._v = items.sort(BowVector.defaultCompare);
     }
   }
 
@@ -41,30 +38,28 @@ export class BowVector {
 
   /**
    * @description Adds a WORD to the current
-   * BagOfWordsVector. Returns the existing
+   * BowVector. Returns the existing
    * index if WORD exists or -1 denoting a
    * a new word.
+   * @param {string} word
+   * @param {number} freq
+   * @returns
    */
-  push(word: BowVectorVal, freq: number): number {
-    const find = defaultFind(word);
+  push(word, freq) {
+    const find = BowVector.defaultFind(word);
     const existingIdx = findIndex(find, this._v);
-
     if (existingIdx > -1) {
-      this._v[existingIdx][FREQ_KEY] += freq;
+      this._v[existingIdx][BowVector.FREQ_KEY] += freq;
     } else {
       const newIdx = findPossibleIndex(find, this._v);
-      this._v.splice(newIdx, 0, {
-        [SORT_KEY]: word,
-        [FREQ_KEY]: freq,
-      });
+      this._v.splice(newIdx, 0, BowVector.makeVectElem(word, freq));
     }
     return existingIdx;
   }
 
-  delete(word: BowVectorVal): BowVector {
-    const find = defaultFind(word);
+  delete(word) {
+    const find = BowVector.defaultFind(word);
     const idx = findIndex(find, this._v);
-
     if (idx > -1) {
       this._v.splice(idx, 1);
     }
@@ -72,8 +67,9 @@ export class BowVector {
     return this;
   }
 
-  get(word: BowVectorVal): number | undefined {
-    const find = defaultFind(word);
+  get(word) {
+    const FREQ_KEY = BowVector.FREQ_KEY;
+    const find = BowVector.defaultFind(word);
     const idx = findIndex(find, this._v);
 
     if (idx === -1) {
@@ -100,13 +96,16 @@ export class BowVector {
   }
 
   _join(combine, sm, lg) {
-    let results: BowVectorElem[] = [];
+    const SORT_KEY = BowVector.SORT_KEY;
+    const FREQ_KEY = BowVector.FREQ_KEY;
+
+    let results = [];
     let i = 0;
     let j = 0;
 
     while (sm[i] && lg[j]) {
-      const a: BowVectorElem = sm[i];
-      const b: BowVectorElem = lg[j];
+      const a = sm[i];
+      const b = lg[j];
 
       if (a[SORT_KEY] < b[SORT_KEY]) {
         results.push(a);
@@ -139,7 +138,7 @@ export class BowVector {
     return results;
   }
 
-  add(that: BowVector) {
+  add(that) {
     const [sm, lg] = this._swap(that, that._v, this._v);
     if (sm === null) {
       return lg;
@@ -148,7 +147,7 @@ export class BowVector {
     return new BowVector(res, true);
   }
 
-  subtract(that: BowVector) {
+  subtract(that) {
     const [sm, lg] = this._swap(that, that._v, this._v);
     if (sm === null) {
       return lg;
@@ -169,18 +168,18 @@ export class BowVector {
       const a = sm[i];
       const b = lg[j];
 
-      if (a[SORT_KEY] < b[SORT_KEY]) {
+      if (a[BowVector.SORT_KEY] < b[BowVector.SORT_KEY]) {
         // Equivalent of b.freq == 0
-        v1mag += a[FREQ_KEY] ** 2;
+        v1mag += a[BowVector.FREQ_KEY] ** 2;
         i++;
-      } else if (a[SORT_KEY] > b[SORT_KEY]) {
+      } else if (a[BowVector.SORT_KEY] > b[BowVector.SORT_KEY]) {
         // Equivalent of a.freq == 0
-        v2mag += b[FREQ_KEY] ** 2;
+        v2mag += b[BowVector.FREQ_KEY] ** 2;
         j++;
       } else {
-        v1mag += a[FREQ_KEY] ** 2;
-        v2mag += b[FREQ_KEY] ** 2;
-        dotProd += a[FREQ_KEY] * b[FREQ_KEY];
+        v1mag += a[BowVector.FREQ_KEY] ** 2;
+        v2mag += b[BowVector.FREQ_KEY] ** 2;
+        dotProd += a[BowVector.FREQ_KEY] * b[BowVector.FREQ_KEY];
         i++;
         j++;
       }
@@ -188,24 +187,19 @@ export class BowVector {
 
     if (sm[i]) {
       for (; i < sm.length; i++) {
-        v1mag += sm[i][FREQ_KEY] ** 2;
+        v1mag += sm[i][BowVector.FREQ_KEY] ** 2;
       }
     }
 
     if (lg[j]) {
       for (; j < lg.length; j++) {
-        v2mag += lg[j][FREQ_KEY] ** 2;
+        v2mag += lg[j][BowVector.FREQ_KEY] ** 2;
       }
     }
 
     return dotProd / (Math.sqrt(v1mag) * Math.sqrt(v2mag));
   }
 
-  /**
-   *
-   * @param {BowVector} that
-   * @returns {number}
-   */
   similarity(that) {
     const [sm, lg] = this._swap(that, 0, 0);
     if (sm === null) {
@@ -215,3 +209,5 @@ export class BowVector {
     return this._similarity(sm, lg);
   }
 }
+
+module.exports = { BowVector };
