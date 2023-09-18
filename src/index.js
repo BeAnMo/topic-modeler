@@ -48,7 +48,6 @@ class Model {
   constructor() {
     this.bow = new BowVectorTrie();
     this.allTerms = new xSet();
-
     this.allTermsVect = [];
   }
 
